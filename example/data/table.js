@@ -1381,7 +1381,7 @@ export const clean_columns = [
     },
     {
         header: "Description",
-        canSort: true,
+        canSort: false,
         disable: true,
         id: "description",
         show: false,
