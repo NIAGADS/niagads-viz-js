@@ -1,5 +1,5 @@
 //@ts-nocheck
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from "@storybook/react";
 
 import Table  from '@table/Table';
 import { TABLE_DEFINTION as table } from '../../../../example/data/table_rendering_test'
@@ -20,8 +20,8 @@ type Story = StoryObj<typeof Table>;
 
 export const Default: Story = {
     args: {
-       columns: table.columns,
-       options: table.options,
-       data: table.data
-    }
+        columns: table.columns,
+        options: table.options,
+        data: table.data,
+    },
 };

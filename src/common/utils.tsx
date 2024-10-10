@@ -51,8 +51,9 @@ export const _isNull = (value: BasicType | null ) => {
 }
 
 
-export const toFixedWithoutZeros = (value: number, precision: number = 2) =>
-    Number.parseFloat(value.toFixed(precision)).toString()
+export const toFixedWithoutZeros = (value: number, precision: number = 2) => {
+    return Number.parseFloat(value.toFixed(precision)).toString()
+}
 
 export const toExponential = (value: string | number, precision: number = 2) => {
     const snValue = Number.parseFloat(value.toString()).toExponential(precision ? precision : 2) 

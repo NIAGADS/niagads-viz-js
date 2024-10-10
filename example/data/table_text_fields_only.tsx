@@ -27,7 +27,7 @@ export const TABLE_DEFINTION: Table = {
         },
         {
             id: 'description',
-            canSort: false,
+            disableSorting: true,
         },
         {
             id: 'biomarker',

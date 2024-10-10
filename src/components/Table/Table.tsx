@@ -12,6 +12,8 @@ import {
     createColumnHelper,
     ColumnDef,
     HeaderGroup,
+    SortingFnOption,
+    getSortedRowModel,
     RowSelectionState,
     TableOptions,
     Table as ReactTable
@@ -31,9 +33,10 @@ import {
     validateCellType
 } from "@table/Cell"
 import { TableConfig, TableData, TableRow } from "@table/TableProperties";
-import { ColumnSortConfig, GenericColumn, getColumn } from "@table/Column"
+import { GenericColumn, getColumn } from "@table/Column"
 import { PaginationControls } from "@table/PaginationControls";
 import { TableColumnHeader } from "@table/TableColumnHeader";
+import { CustomSortingFunctions } from "./TableSortingFunctions";
 
 import { Checkbox } from "@components/UI/Checkbox";
 import { Button, Tooltip } from "@components/UI";
@@ -50,10 +53,20 @@ const __TAILWIND_CSS = {
 
 const TABLE_CLASSES = `${__TAILWIND_CSS.table_border} ${__TAILWIND_CSS.table_layout} ${__TAILWIND_CSS.table_text}`
 
-// FIXME: type of return should be custom sorting function
-const __resolveSortingFn = (options: ColumnSortConfig) => {
-    // ! point here says that as this point, we know options will not be undefined
-    return _hasOwnProperty('sortingFn', options) ? options.sortingFn : 'alphanumeric'
+export interface Table {
+    options?: TableConfig
+    columns: GenericColumn[]
+    data: TableData
+}
+
+const __resolveSortingFn = (col: GenericColumn) => {
+    if (col.type === 'boolean') {
+        return 'boolean';
+    }
+    if (col.type === 'float') {
+        return 'scientific';
+    }
+    return 'alphanumeric';
 }
 
 // wrapper to catch any errors thrown during cell type and properties validation so that 
@@ -181,11 +194,11 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
                         header: _get('header', col, toTitleCase(col.id)),
                         enableColumnFilter: _get('canFilter', col, true),
                         enableGlobalFilter: _get('disableGlobalFilter', col, false),
-                        enableSorting: _get('canSort', col, true),
+                        enableSorting: !col.disableSorting,
+                        sortingFn: __resolveSortingFn(col) as SortingFnOption<TableRow>,
                         enableHiding: !(_get('required', col, false)), // if required is true, enableHiding is false
                         meta: { description: _get('description', col) },
                         cell: props => renderCell(props.cell.row.original[col.id] as Cell),
-                        // TODO: sortingFn: col.sort !== undefined && __resolveSortingFn(col.sort)
                     }
                 )
             )
@@ -233,11 +246,19 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
         columns: resolvedColumns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        enableColumnResizing: true,
+        /*defaultColumn: {
+            size: 150,
+            minSize: 0,
+            maxSize: 300,
+        },*/
         state: {
+            sorting,
             rowSelection
-        }
-
+        },
+        onSortingChange: setSorting,
+        getSortedRowModel: getSortedRowModel(),      
+        sortingFns: CustomSortingFunctions,
+        enableColumnResizing: true,
     }
 
     if (enableRowSelect) {
@@ -259,13 +280,6 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
             }
         }
     }
-
-
-
-
-
-
-
 
     const table = useReactTable(reactTableOptions);
 
@@ -311,7 +325,6 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
             <div>No data</div>
     )
 }
-
 
 const TableWithErrorBoundary = withErrorBoundary(Table, {
     FallbackComponent: errorFallback,
