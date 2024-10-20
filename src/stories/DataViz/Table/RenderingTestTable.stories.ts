@@ -20,6 +20,7 @@ type Story = StoryObj<typeof Table>;
 
 export const Default: Story = {
     args: {
+        id: table.id,
         columns: table.columns,
         options: table.options,
         data: table.data,

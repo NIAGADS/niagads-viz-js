@@ -1,43 +1,55 @@
 import React, { useState, useEffect, useId } from "react"
 import { Table as ReactTable } from "@tanstack/react-table"
-import exportFromJson from "export-from-json"
+import exportFromJSON from "export-from-json"
 
-import { Button, Checkbox, RadioButton, Select } from "@components/UI"
+import { Button, Checkbox, Select } from "@components/UI"
 import { ArrowDownTrayIcon } from "@heroicons/react/24/solid"
-import { _get } from "@common/utils"
+import { FileFormat, EXPORT_FILE_FORMATS } from "@common/types"
 
+export const exportTable = (table: ReactTable<any>, tableId: string, filteredRowsOnly: boolean, format: FileFormat) => {
+    const isFiltered: boolean = table.getState().globalFilter !== '' /* && table.getState().columnFilters ? -> array so not sure what to test yet */
+    const columnIds: string[] = table.getVisibleFlatColumns().filter(col => col.id != 'select-col').map((col) => col.id )
+    const rows = isFiltered ? (filteredRowsOnly ? table.getSortedRowModel().rows : table.getPreFilteredRowModel().rows)
+        : table.getSortedRowModel().rows
 
-type __EXPORT_FROM_JSON_TYPES = typeof exportFromJson.types
+    /*  NOTE: Row models are applied as follows:
+        getCoreRowModel -> getFilteredRowModel -> getGroupedRowModel 
+            -> getSortedRowModel -> getExpandedRowModel -> getPaginationRowModel -> getRowModel
+        so, SortedRowModel will be filtered, but filtered is not sorted (so pre-filtered is not sorted either);
+        i.e. if a filter is applied, it is not possible to get a pre-filtered, sorted list of rows from ReactTables
+    */
 
-export const buildTableExport = (table: ReactTable<any>, filteredRowsOnly: boolean, format: string) => {
-    const exportType = exportFromJson.types[format as keyof __EXPORT_FROM_JSON_TYPES]
+    const exportData: any = rows.map(r => (
+        Object.fromEntries(columnIds.map(colId => [colId, r.getValue(colId)])
+    )))
+
+    exportFromJSON({data: exportData, fileName: tableId, withBOM: true, extension: format, delimiter: format == 'txt' ? '\t' : ',', exportType: format == 'txt' ? 'csv' : format})
+    //console.log(exportData)
 }
 
 
 interface ExportMenuOptions {
     onSubmit?: any
     isFiltered: boolean
-    exportOptions: string[]
 }
 
 // working from https://www.creative-tim.com/twcomponents/component/pure-css-dropdown-using-focus-within
 // idea to create a drop down menu w/select which data and which format
 
-export const TableExportControls = ({ isFiltered, exportOptions, onSubmit }: ExportMenuOptions) => {
-    const [exportAllRows, setExportAllRows] = useState<boolean>(isFiltered);
+export const TableExportControls = ({ isFiltered, onSubmit }: ExportMenuOptions) => {
+    const [filteredOnly, setFilteredOnly] = useState<boolean>(isFiltered);
     const formId = useId()
+
+    const x:FileFormat = 'csv'
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        console.log(event.currentTarget);
         const formData = new FormData(event.currentTarget);
         onSubmit(Object.fromEntries(formData))
     };
 
-
-
     useEffect(() => {
-        setExportAllRows(isFiltered)
+        setFilteredOnly(isFiltered)
     }, [isFiltered])
 
     return (
@@ -48,21 +60,26 @@ export const TableExportControls = ({ isFiltered, exportOptions, onSubmit }: Exp
             </Button>
 
             <div className="hidden dropdown-menu">
-                <div className="z-50 absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none" aria-labelledby="headlessui-menu-button-1" id="headlessui-menu-items-117" role="menu">
+                <div className="z-50 absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg outline-none" aria-labelledby={`${formId}-headlessui-menu-button}`} id={`${formId}-headlessui-menu-items`} role="menu">
                     <div className="px-4 py-3">
                         <form id={formId} onSubmit={handleSubmit}>
                             {isFiltered &&
-                                <Checkbox name='export_all' variant="accent"
-                                    value={exportAllRows.toString()}
-                                    label="Visible Rows Only" checked={exportAllRows}
-                                    onChange={() => setExportAllRows(!exportAllRows)}></Checkbox>}
-                            <Select id={`${formId}_select_export_format"`} name="format" fields={exportOptions} label="Export table data as"></Select>
+                                <Checkbox name='filtered_only' variant="accent"
+                                    value={filteredOnly.toString()}
+                                    label="Filtered Rows Only" checked={filteredOnly}
+                                    onChange={() => setFilteredOnly(!filteredOnly)}></Checkbox>
+                            }
+
+                            <Select id={`${formId}_select_export_format"`}
+                                name="format"
+                                fields={EXPORT_FILE_FORMATS}
+                                label="Export table data as"></Select>
+
                             <div className="mt-2 flex justify-center">
-                                <Button variant="accent" size="sm" >Export</Button>
+                                <Button size="md" >Export</Button>
                             </div>
                         </form>
                     </div>
-
                 </div>
             </div>
         </div>

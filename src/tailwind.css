@@ -21,12 +21,12 @@
     .info-link { 
         @apply cursor-pointer underline decoration-dashed decoration-blue-600 underline-offset-4
     }
-    .dropdown {
+    /*.dropdown {
         
     }
 
     .dropdown-menu {
-    }
+    }*/
     .dropdown:focus-within .dropdown-menu {
         @apply block; 
         /* display:block; */

@@ -1,7 +1,9 @@
 import { Table } from '../../src/components/Table/Table'
 
 export const TABLE_DEFINTION: Table = {
+    id: 'large_numeric_example',
     options: {
+        
         initialize: { sort: { "pvalue": 'asc' }, filter: { "pvalue": 5e-8 } },
         defaultColumns: ["relative_position", "variant_link", "pvalue", "allele", "track_name_link", "ref_snp_id", "is_adsp_variant", "neuropathology"]
     },

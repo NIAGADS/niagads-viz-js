@@ -49,10 +49,10 @@ export const PaginationControls = ({ table }: PaginationControlsProps) => {
                 label="Results per page" id="pages" inline variant='plain' />
             <p className="text-sm text-gray-900 px-2">{minDisplayedRow} - {maxDisplayedRow} of {nRows}</p>
             <Button variant="white" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
-                <ChevronLeftIcon className={`icon-button ${!table.getCanPreviousPage() ? 'icon-disabled' : ''}`}></ChevronLeftIcon>
+                <ChevronLeftIcon className={`icon-button stroke-1 ${!table.getCanPreviousPage() ? 'icon-disabled' : 'stroke-black'}`}></ChevronLeftIcon>
             </Button>
             <Button variant="white" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-                <ChevronRightIcon className={`icon-button ${!table.getCanNextPage() ? 'icon-disabled' : ''}`}></ChevronRightIcon>
+                <ChevronRightIcon className={`icon-button stroke-1 ${!table.getCanNextPage() ? 'icon-disabled' : 'stroke-black'}`}></ChevronRightIcon>
             </Button>
         </div>
     </>
