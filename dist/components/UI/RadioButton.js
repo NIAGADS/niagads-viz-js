@@ -1,0 +1,2 @@
+import e from"react";import{CHECKBOX_TAILWIND_CSS as a}from"./Checkbox.js";const t=({variant:t="default",label:l,onChange:n,disabled:r=!1,checked:c=!1,alignCenter:m=!1})=>{const s=a[t];return e.createElement("div",{className:m?a.alignCenter:""},e.createElement("input",{type:"radio",className:s,onChange:n,checked:c,disabled:r}),l&&e.createElement("label",{className:"text-sm ml-2"},l))};export{t as RadioButton};
+//# sourceMappingURL=RadioButton.js.map

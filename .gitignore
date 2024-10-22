@@ -6,7 +6,7 @@
 # rollup
 .rollup.cache/*
 bundle-analysis.html
-dist/*
+# dist/*
 
 # npm/node
 package-lock.json

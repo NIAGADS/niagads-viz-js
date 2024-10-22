@@ -1,0 +1,2 @@
+const e=(e,t)=>{switch(!0){case"NA"==e&&"NA"==t:return 0;case"NA"!=e&&"NA"==t:return-1;case"NA"==e&&"NA"!=t:return 1;default:return null}},t=(t,l)=>{const n=e(t,l);return null!=n?n:t===l?0:t>l?1:-1},l={boolean:(e,l,n)=>t(e.getValue(n),l.getValue(n)),scientific:(t,l,n)=>{let u=t.getValue(n),r=l.getValue(n);const s=e(`${u}`,`${r}`);return null!=s?s:(u=null==u?-1/0:u,r=null==r?-1/0:r,u=/\d(\.\d+)?e-\d+/.test(u)?+u:u,r=/\d(\.\d+)?e-\d+/.test(r)?+r:r,u>r?1:u<r?-1:0)}};export{l as CustomSortingFunctions};
+//# sourceMappingURL=TableSortingFunctions.js.map

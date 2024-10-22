@@ -1,0 +1,2 @@
+import e from"react";import{InformationCircleIcon as t,QuestionMarkCircleIcon as o}from"@heroicons/react/24/outline";import{Tooltip as r}from"./Tooltip.js";const s=({message:s,type:m})=>{const i="info"===m?e.createElement(t,{className:"ml-1 size-3 text-blue-600"}):e.createElement(o,{className:"ml-1 size-3 text-blue-600"});return e.createElement(r,{children:i,message:s,position:"right"})},m=(t,o="question")=>e.createElement(s,{message:t,type:o});export{s as HelpIcon,m as renderHelpIcon};
+//# sourceMappingURL=HelpIcon.js.map

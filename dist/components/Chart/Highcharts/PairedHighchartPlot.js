@@ -1,0 +1,2 @@
+import r from"react";import t from"highcharts";import o from"highcharts-react-official";import h from"highcharts/modules/exporting";import e from"highcharts/modules/data";import s from"highcharts/modules/heatmap";h(t),e(t),s(t);class a extends r.Component{constructor(h){super(h),this.render=()=>r.createElement(o,{highcharts:t,options:this.props.chart})}}export{a as default};
+//# sourceMappingURL=PairedHighchartPlot.js.map

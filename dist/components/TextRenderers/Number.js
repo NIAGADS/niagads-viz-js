@@ -1,0 +1,2 @@
+import e,{useMemo as r}from"react";import{renderNullValue as t}from"./TextRenderer.js";import{Text as o}from"./BasicText.js";import{toExponential as n,toFixedWithoutZeros as s,_get as i,_isNull as l,_isNA as m}from"../../common/utils.js";const p=(e,r=2)=>{const t=n(e,r);return r&&!t.toString().includes("e")?s(t,r):t},c=({props:n})=>{let s=i("value",n);return l(s)?t(i("nullValue",n)):m(s)?t():(s=r((()=>p(s,i("precision",n,null))),[n]),e.createElement(o,{props:Object.assign(n,{value:s})}))};export{c as Float,p as formatFloat};
+//# sourceMappingURL=Number.js.map

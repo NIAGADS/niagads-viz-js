@@ -1,0 +1,1 @@
+{"version":3,"file":"config.js","sources":["../../../src/components/LocusZoom/config.ts"],"sourcesContent":[null],"names":["config","DEFAULT_LD_POPULATION","DEFAULT_FLANK","populations","display_name","value"],"mappings":"AAUA,IAAeA,EAAA,CACXC,sBAAuB,OACvBC,cAAe,IACfC,YAZiB,CACjB,CAAEC,aAAc,WAAYC,MAAO"}
