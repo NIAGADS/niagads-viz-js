@@ -1,9 +1,9 @@
+
 {
   "name": "niagads-viz-js",
   "version": "0.1.0",
   "author": "fossilfriend,bug-sam",
   "scripts": {
-    "prepare": "npm run build",
     "build": "rollup -c --bundleConfigAsCjs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
