@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef, useState, useEffect } from "react";
 
-import Grid from "@mui/material/Grid"
+// import Grid from "@mui/material/Grid"
 import { useWindowSize } from "@uidotdev/usehooks"
 
 import { initialize } from "./plot";
@@ -100,9 +100,9 @@ export const LocusZoomPlot: React.FC<LocusZoomPlotProps> = ({
     };
 
     return (
-        <Grid container alignItems="center" direction="column">
+        <div>
             <div id={divId ? divId : "locus-zoom"} className={className ? className : undefined}/>
-        </Grid>
+        </div>
     );
 };
 
