@@ -7,7 +7,7 @@ const __TAILWIND_CSS = {
     secondary:"text-primary border-secondary bg-secondary hover:bg-secondary/85 focus:ring-secondary/30",
     accent: "text-white border-accent bg-accent hover:bg-accent/50 focus:ring-accent/30 focus:outline-none",
     white: "border-white text-primary focus:outline-none bg-white hover:bg-gray-100 hover:border-gray-100 hover:text-blue-700 focus:ring-text-blue-700",
-    default: "",
+    default: "text-white border-blue-500 bg-blue-500 hover:bg-blue-700 focus:ring-blue-700",
 
     //states
     disabled: "disabled:bg-slate-50 disabled:text-slate-500 disabled:border",

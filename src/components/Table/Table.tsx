@@ -54,11 +54,7 @@ const __TAILWIND_CSS = {
 
 const TABLE_CLASSES = `${__TAILWIND_CSS.table_border} ${__TAILWIND_CSS.table_layout} ${__TAILWIND_CSS.table_text}`
 
-export interface Table {
-    options?: TableConfig
-    columns: GenericColumn[]
-    data: TableData
-}
+
 
 const __resolveSortingFn = (col: GenericColumn) => {
     if (col.type === 'boolean') {
@@ -119,19 +115,22 @@ const __setInitialRowSelection = (columnIds: string[] | undefined) => {
 }
 
 
-export interface Table {
+export interface TableProps {
+    id: string
     options?: TableConfig
     columns: GenericColumn[]
     data: TableData
 }
 
+
 // TODO: use table options to initialize the state (e.g., initial sort, initial filter)
-const Table: React.FC<Table> = ({ columns, data, options }) => {
+const Table: React.FC<TableProps> = ({ id, columns, data, options }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [rowSelection, setRowSelection] = useState<RowSelectionState>(__setInitialRowSelection(options?.rowSelect?.selectedValues))
     const initialRender = useRef(true) // to regulate callbacks affected by the initial state
     const enableRowSelect = !!options?.rowSelect?.onRowSelect
+    const disableColumnFilters = !!options?.disableColumnFilters
 
     // Translate GenericColumns provided by user into React Table ColumnDefs
     // also adds in checkbox column if rowSelect options are set for the table
@@ -196,7 +195,7 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
                     {
                         id: col.id,
                         header: _get('header', col, toTitleCase(col.id)),
-                        enableColumnFilter: _get('canFilter', col, true),
+                        enableColumnFilter: _get('canFilter', col, true) && !disableColumnFilters,
                         enableGlobalFilter: !col.disableGlobalFilter,
                         enableSorting: !col.disableSorting,
                         sortingFn: __resolveSortingFn(col) as SortingFnOption<TableRow>,
@@ -304,9 +303,9 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
     return (
         table ? (<>
             <div className={__TAILWIND_CSS.container}>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   {/*  <SearchInput value={globalFilter} onChange={val => setGlobalFilter(val)} /> */}
-                    <TableToolbar table={table} exportTypes={options?.exportFileTypes}/>
+                    <TableToolbar table={table} tableId={id} enableExport={!!!options?.disableExport}/>
                     <PaginationControls table={table} />
                 </div>
 

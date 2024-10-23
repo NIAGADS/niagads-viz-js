@@ -1,6 +1,7 @@
-import { error } from "console";
+import exportFromJson from "export-from-json"
 
-export type FileFormat = 'csv' | 'json' | 'xlsx' | 'xml' 
+export const EXPORT_FILE_FORMATS = Object.keys(exportFromJson.types).filter(f => !(['css', 'html'].includes(f)))
+export type FileFormat =  Exclude<keyof typeof exportFromJson.types, 'css' | 'html' >
 export type BasicType = string | number | boolean
 
 export type NAString = 'NA' | 'N/A' | 'NULL' | '.' | '' | 'na' | 'n/a' | 'null'

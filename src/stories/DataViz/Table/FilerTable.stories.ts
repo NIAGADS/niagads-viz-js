@@ -2,10 +2,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
 import Table from '@table/Table';
-import { TABLE_DEFINTION as table } from '../../../../example/data/table_text_fields_only';
+import { TABLE_DEFINTION as table } from '../../../../example/data/table_filer.tsx';
 
 const meta: Meta<typeof Table> = {
-    title: 'NIAGADS-VIZ/Data Vizualization/Table/Table',
+    title: 'NIAGADS-VIZ/Data Vizualization/Table/FILER Table',
     component: Table,
     parameters: {
         // Optional parameter to center the component in the Canvas. More info: https://storybook.js.org/docs/configure/story-layout
