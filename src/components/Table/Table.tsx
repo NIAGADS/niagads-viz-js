@@ -1,7 +1,13 @@
 // TODO: put sorting back in
 // TODO: filtering
 
-import React, { useMemo, useState, useLayoutEffect, useEffect, useRef } from "react"
+import React, {
+    useMemo,
+    useState,
+    useLayoutEffect,
+    useEffect,
+    useRef,
+} from "react";
 import { withErrorBoundary } from "react-error-boundary";
 import {
     flexRender,
@@ -17,13 +23,12 @@ import {
     getSortedRowModel,
     RowSelectionState,
     TableOptions,
-    Column as ReactTableColumn
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
-import { TrashIcon } from '@heroicons/react/24/outline'
+import { TrashIcon } from "@heroicons/react/24/outline";
 
-import { _get, _hasOwnProperty, toTitleCase } from "@common/utils"
-import { errorFallback } from "@common/errors"
+import { _get, _hasOwnProperty, toTitleCase } from "@common/utils";
+import { errorFallback } from "@common/errors";
 
 import {
     Cell,
@@ -31,55 +36,71 @@ import {
     getCellValue,
     renderCell,
     resolveCell,
-    validateCellType
-} from "./Cell"
-import { TableConfig, TableData, TableRow } from "./TableProperties"
-import { GenericColumn, getColumn } from "./Column"
-import { TableColumnHeader } from "./TableColumnHeader"
-import { CustomSortingFunctions } from "./TableSortingFunctions"
+    validateCellType,
+} from "./Cell";
+import { TableConfig, TableData, TableRow } from "./TableProperties";
+import { GenericColumn, getColumn } from "./Column";
+import { TableColumnHeader } from "./TableColumnHeader";
+import { CustomSortingFunctions } from "./TableSortingFunctions";
 
-import { PaginationControls, TableToolbar } from "@table/ControlElements"
+import { PaginationControls, TableToolbar } from "@table/ControlElements";
 
-import { Button, Tooltip, Checkbox, RadioButton, SearchInput } from "@components/UI"
-
+import {
+    Button,
+    Tooltip,
+    Checkbox,
+    RadioButton,
+    SearchInput,
+} from "@components/UI";
 
 const __TAILWIND_CSS = {
     container: "block mx-2 max-w-full", //"block max-w-full relative shadow-md",
-    table_border: "border-collapse border-0 border-t-[4px] border-solid border-black",
+    table_border:
+        "border-collapse border-0 border-t-[4px] border-solid border-black",
     table_layout: "w-full overflow-x-scroll",
     table_text: "text-sm text-left rtl:text-right text-gray-700",
     td: "py-1.5 pr-6 pl-4 text-xs font-roboto border-solid border-slate-200 border-0 border-b-[1px] border-r-[1px]",
-    dtr: "hover:bg-gray-50 bg-white border-b odd:border-gray-700"
-}
+    dtr: "hover:bg-gray-50 bg-white border-b odd:border-gray-700",
+};
 
-const TABLE_CLASSES = `${__TAILWIND_CSS.table_border} ${__TAILWIND_CSS.table_layout} ${__TAILWIND_CSS.table_text}`
+const TABLE_CLASSES = `${__TAILWIND_CSS.table_border} ${__TAILWIND_CSS.table_layout} ${__TAILWIND_CSS.table_text}`;
 
 export interface Table {
-    options?: TableConfig
-    columns: GenericColumn[]
-    data: TableData
+    options?: TableConfig;
+    columns: GenericColumn[];
+    data: TableData;
 }
 
 const __resolveSortingFn = (col: GenericColumn) => {
-    if (col.type === 'boolean') {
-        return 'boolean';
+    if (col.type === "boolean") {
+        return "boolean";
     }
-    if (col.type === 'float') {
-        return 'scientific';
+    if (col.type === "float") {
+        return "scientific";
     }
-    return 'alphanumeric';
-}
+    return "alphanumeric";
+};
 
-// wrapper to catch any errors thrown during cell type and properties validation so that 
+// wrapper to catch any errors thrown during cell type and properties validation so that
 // user can more easily identify the problematic table cell by row/column
-const __resolveCell = (userCell: GenericCell | GenericCell[], column: GenericColumn, index: number) => {
+const __resolveCell = (
+    userCell: GenericCell | GenericCell[],
+    column: GenericColumn,
+    index: number
+) => {
     try {
-        return resolveCell(userCell, column)
+        return resolveCell(userCell, column);
+    } catch (e: any) {
+        throw Error(
+            "Validation Error parsing field value for row " +
+                index +
+                " column `" +
+                column.id +
+                "`.\n" +
+                e.message
+        );
     }
-    catch (e: any) {
-        throw Error("Validation Error parsing field value for row " + index + " column `" + column.id + "`.\n" + e.message)
-    }
-}
+};
 
 // TODO: (maybe?) catch hidden to skip during rendering
 // NOTE: according to documentation https://tanstack.com/table/latest/docs/guide/column-visibility#column-visibility-state
@@ -98,40 +119,44 @@ const __renderTableHeader = (hGroups: HeaderGroup<TableRow>[]) => (
             </tr>
         ))}
     </thead>
-)
-
+);
 
 // checks to see if a field contains a unique value for each row in the table
 // allowing it to be used as a valid "primary key" or row_id for row selection
 const __isValidRowId = (data: TableData, columnId: string) => {
-    const values = data.map((row) => getCellValue(row[columnId as keyof typeof row] as Cell))
-    return (Array.from(new Set(values)).length == data.length)
-}
-
+    const values = data.map((row) =>
+        getCellValue(row[columnId as keyof typeof row] as Cell)
+    );
+    return Array.from(new Set(values)).length == data.length;
+};
 
 // builds data structure to initialize row selection state
 const __setInitialRowSelection = (columnIds: string[] | undefined) => {
-    let rSelection: RowSelectionState = {}
+    let rSelection: RowSelectionState = {};
     if (columnIds) {
-        columnIds.forEach((colId) => { rSelection[colId] = true })
+        columnIds.forEach((colId) => {
+            rSelection[colId] = true;
+        });
     }
-    return rSelection
-}
-
+    return rSelection;
+};
 
 export interface Table {
-    options?: TableConfig
-    columns: GenericColumn[]
-    data: TableData
+    options?: TableConfig;
+    columns: GenericColumn[];
+    data: TableData;
 }
 
 // TODO: use table options to initialize the state (e.g., initial sort, initial filter)
 const Table: React.FC<Table> = ({ columns, data, options }) => {
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [globalFilter, setGlobalFilter] = useState('');
-    const [rowSelection, setRowSelection] = useState<RowSelectionState>(__setInitialRowSelection(options?.rowSelect?.selectedValues))
-    const initialRender = useRef(true) // to regulate callbacks affected by the initial state
-    const enableRowSelect = !!options?.rowSelect?.onRowSelect
+    const [globalFilter, setGlobalFilter] = useState("");
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>(
+        __setInitialRowSelection(options?.rowSelect?.selectedValues)
+    );
+    const [columnVisibility, setColumnVisibility] = useState({});
+    const initialRender = useRef(true); // to regulate callbacks affected by the initial state
+    const enableRowSelect = !!options?.rowSelect?.onRowSelect;
 
     // Translate GenericColumns provided by user into React Table ColumnDefs
     // also adds in checkbox column if rowSelect options are set for the table
@@ -140,109 +165,142 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
         const columnDefs: ColumnDef<TableRow>[] = [];
 
         if (enableRowSelect) {
-            const multiSelect: boolean = !!options?.rowSelect?.enableMultiRowSelect;
-            columnDefs.push(
-                {
-                    id: 'select-col',
-                    header: ({ table }) => (
-                        multiSelect ?
-                            <div className="inline-flex">
-                                <div className="group relative inline-block bottom-[2px]">
-                                    <Tooltip message="Reset selected rows">
-                                        <Button size="sm" variant="primary"
-                                            disabled={!table.getIsSomeRowsSelected()}
-                                            onClick={() => { table.resetRowSelection(true) }}>
-                                            <TrashIcon className="icon-button"></TrashIcon>
-                                        </Button>
-                                    </Tooltip>
-                                </div>
-                                <span className="ml-4">{options?.rowSelect?.header}</span>
+            const multiSelect: boolean =
+                !!options?.rowSelect?.enableMultiRowSelect;
+            columnDefs.push({
+                id: "select-col",
+                header: ({ table }) =>
+                    multiSelect ? (
+                        <div className="inline-flex">
+                            <div className="group relative inline-block bottom-[2px]">
+                                <Tooltip message="Reset selected rows">
+                                    <Button
+                                        size="sm"
+                                        variant="primary"
+                                        disabled={
+                                            !table.getIsSomeRowsSelected()
+                                        }
+                                        onClick={() => {
+                                            table.resetRowSelection(true);
+                                        }}
+                                    >
+                                        <TrashIcon className="icon-button"></TrashIcon>
+                                    </Button>
+                                </Tooltip>
                             </div>
-                            : options?.rowSelect?.header
+                            <span className="ml-4">
+                                {options?.rowSelect?.header}
+                            </span>
+                        </div>
+                    ) : (
+                        options?.rowSelect?.header
                     ),
-                    enableHiding: false,
-                    enableSorting: true, // FIXME: enable sorting doesn't seem to work / header.canSort() returns false
-                    meta: { description: options?.rowSelect?.description },
-                    cell: ({ row }) => (
-                        multiSelect ? <Checkbox
+                enableHiding: false,
+                enableSorting: true, // FIXME: enable sorting doesn't seem to work / header.canSort() returns false
+                meta: { description: options?.rowSelect?.description },
+                cell: ({ row }) =>
+                    multiSelect ? (
+                        <Checkbox
                             variant="default"
                             name={`checkbox_r${row.id}`}
                             checked={row.getIsSelected()}
                             disabled={!row.getCanSelect()}
                             onChange={row.getToggleSelectedHandler()}
                             alignCenter={true}
-                        /> : <RadioButton
+                        />
+                    ) : (
+                        <RadioButton
                             variant="default"
                             name={`radiobox r${row.id}`}
                             checked={row.getIsSelected()}
                             disabled={!row.getCanSelect()}
                             onChange={row.getToggleSelectedHandler()}
-                            alignCenter={true} />
+                            alignCenter={true}
+                        />
                     ),
-                },
-            )
+            });
         }
 
         columns.forEach((col: GenericColumn) => {
             try {
-                col.type = validateCellType(col.type)
-            }
-            catch (e: any) {
-                throw Error("Error processing column definition for `" + col.id + "`.\n" + e.message)
+                col.type = validateCellType(col.type);
+            } catch (e: any) {
+                throw Error(
+                    "Error processing column definition for `" +
+                        col.id +
+                        "`.\n" +
+                        e.message
+                );
             }
 
             columnDefs.push(
-                columnHelper.accessor(row => getCellValue(row[col.id as keyof typeof row] as Cell),
+                columnHelper.accessor(
+                    (row) =>
+                        getCellValue(row[col.id as keyof typeof row] as Cell),
                     {
                         id: col.id,
-                        header: _get('header', col, toTitleCase(col.id)),
-                        enableColumnFilter: _get('canFilter', col, true),
+                        header: _get("header", col, toTitleCase(col.id)),
+                        enableColumnFilter: _get("canFilter", col, true),
                         enableGlobalFilter: !col.disableGlobalFilter,
                         enableSorting: !col.disableSorting,
-                        sortingFn: __resolveSortingFn(col) as SortingFnOption<TableRow>,
-                        enableHiding: !(_get('required', col, false)), // if required is true, enableHiding is false
-                        meta: { description: _get('description', col) },
-                        cell: props => renderCell(props.cell.row.original[col.id] as Cell),
+                        sortingFn: __resolveSortingFn(
+                            col
+                        ) as SortingFnOption<TableRow>,
+                        enableHiding: !_get("required", col, false), // if required is true, enableHiding is false
+                        meta: { description: _get("description", col) },
+                        cell: (props) =>
+                            renderCell(props.cell.row.original[col.id] as Cell),
                     }
                 )
-            )
+            );
         });
         return columnDefs;
     }, []);
 
     const resolvedData = useMemo<TableData>(() => {
-        let tableData: TableData = []
-        const enFields = columns.length // expected number of fields
+        let tableData: TableData = [];
+        const enFields = columns.length; // expected number of fields
         try {
             data.forEach((row: TableRow, index: number) => {
                 // validate expected number of fields per row observed
-                const onFields = Object.keys(row).length // observed number of fields
+                const onFields = Object.keys(row).length; // observed number of fields
                 if (onFields > enFields) {
-                    throw new Error(`Too many values detected in row ${index}: expected ${enFields}; found ${onFields}`)
+                    throw new Error(
+                        `Too many values detected in row ${index}: expected ${enFields}; found ${onFields}`
+                    );
                 }
                 if (onFields < enFields) {
-                    throw new Error(`Missing columns in row ${index}: each row must provide a value for every column`)
+                    throw new Error(
+                        `Missing columns in row ${index}: each row must provide a value for every column`
+                    );
                 }
 
-                const tableRow: TableRow = {}
+                const tableRow: TableRow = {};
                 for (const [columnId, value] of Object.entries(row)) {
-                    let currentColumn = getColumn(columnId, columns)
+                    let currentColumn = getColumn(columnId, columns);
                     if (currentColumn === undefined) {
-                        throw new Error("Invalid column name found in table data definition `" + columnId + "`");
+                        throw new Error(
+                            "Invalid column name found in table data definition `" +
+                                columnId +
+                                "`"
+                        );
                     }
-                    tableRow[columnId] = __resolveCell(value, currentColumn, index)
+                    tableRow[columnId] = __resolveCell(
+                        value,
+                        currentColumn,
+                        index
+                    );
                 }
-                tableData.push(tableRow)
+                tableData.push(tableRow);
             });
-        }
-        catch (e: any) {
-            throw Error(e.message)
+        } catch (e: any) {
+            throw Error(e.message);
         }
         return tableData;
-    }, [columns])
+    }, [columns]);
 
     // build table options conditionally
-    // cannot memoize this b/c it depends on the state; 
+    // cannot memoize this b/c it depends on the state;
     // doing so leads to very slow rerenders
     let reactTableOptions: TableOptions<TableRow> = {
         data: resolvedData,
@@ -250,36 +308,45 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        globalFilterFn: 'includesString',
+        globalFilterFn: "includesString",
         onGlobalFilterChange: setGlobalFilter,
         state: {
             sorting,
             rowSelection,
             globalFilter,
+            columnVisibility,
         },
         onSortingChange: setSorting,
+        onColumnVisibilityChange: setColumnVisibility,
         getSortedRowModel: getSortedRowModel(),
         sortingFns: CustomSortingFunctions,
-        enableColumnResizing: true
-    }
+        enableColumnResizing: true,
+    };
 
     if (enableRowSelect) {
-        const enableMultiRowSelect = !!options?.rowSelect?.enableMultiRowSelect
+        const enableMultiRowSelect = !!options?.rowSelect?.enableMultiRowSelect;
         Object.assign(reactTableOptions, {
             enableMultiRowSelection: enableMultiRowSelect,
             onRowSelectionChange: setRowSelection, //hoist up the row selection state to your own scope
-        })
+        });
 
-        const rowIdColumn = options?.rowSelect?.rowId
+        const rowIdColumn = options?.rowSelect?.rowId;
         if (!!rowIdColumn) {
-            const isValidRowId = useMemo(() => (__isValidRowId(resolvedData, rowIdColumn)), [rowIdColumn])
+            const isValidRowId = useMemo(
+                () => __isValidRowId(resolvedData, rowIdColumn),
+                [rowIdColumn]
+            );
             if (isValidRowId) {
                 Object.assign(reactTableOptions, {
-                    getRowId: (row: TableRow) => getCellValue(row[rowIdColumn as keyof typeof row] as Cell)
-                })
-            }
-            else {
-                throw Error(`The field ${rowIdColumn} does not contain a unique value for each row.  It cannot be used as the 'rowId' for the rowSelect callback.`)
+                    getRowId: (row: TableRow) =>
+                        getCellValue(
+                            row[rowIdColumn as keyof typeof row] as Cell
+                        ),
+                });
+            } else {
+                throw Error(
+                    `The field ${rowIdColumn} does not contain a unique value for each row.  It cannot be used as the 'rowId' for the rowSelect callback.`
+                );
             }
         }
     }
@@ -294,22 +361,23 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
     }, [table]);
 
     useEffect(() => {
-        if (initialRender.current) { // necessary to prevent actions on pre-selected rows
+        if (initialRender.current) {
+            // necessary to prevent actions on pre-selected rows
             initialRender.current = false;
             return;
         }
-        options?.rowSelect?.onRowSelect(rowSelection)
-    }, [rowSelection])
+        options?.rowSelect?.onRowSelect(rowSelection);
+    }, [rowSelection]);
 
-    return (
-        table ? (<>
-            <div className={__TAILWIND_CSS.container}>
-                <div className="flex justify-between">
-                  {/*  <SearchInput value={globalFilter} onChange={val => setGlobalFilter(val)} /> */}
-                    <TableToolbar table={table} exportTypes={options?.exportFileTypes}/>
-                    <PaginationControls table={table} />
-                </div>
-
+    return table ? (
+        <div className={__TAILWIND_CSS.container}>
+            <div className="flex justify-between">
+                <TableToolbar
+                    table={table}
+                    exportTypes={options?.exportFileTypes}
+                />
+                <PaginationControls table={table} />
+            </div>
             <div className="overflow-auto">
                 <table className={TABLE_CLASSES}>
                     {__renderTableHeader(table.getHeaderGroups())}
@@ -317,8 +385,14 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
                         {table.getRowModel().rows.map((row) => (
                             <tr key={row.id} className={__TAILWIND_CSS.dtr}>
                                 {row.getVisibleCells().map((cell) => (
-                                    <td className={__TAILWIND_CSS.td} key={cell.id}>
-                                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    <td
+                                        className={__TAILWIND_CSS.td}
+                                        key={cell.id}
+                                    >
+                                        {flexRender(
+                                            cell.column.columnDef.cell,
+                                            cell.getContext()
+                                        )}
                                     </td>
                                 ))}
                             </tr>
@@ -326,18 +400,17 @@ const Table: React.FC<Table> = ({ columns, data, options }) => {
                     </tbody>
                 </table>
             </div>
-        </div >
-        </>
-        ) :
-<div>No data</div>
-    )
-}
+        </div>
+    ) : (
+        <div>No data</div>
+    );
+};
 
 const TableWithErrorBoundary = withErrorBoundary(Table, {
     FallbackComponent: errorFallback,
     onError(error, info) {
         console.error(error);
     },
-})
+});
 
-export default TableWithErrorBoundary
+export default TableWithErrorBoundary;
